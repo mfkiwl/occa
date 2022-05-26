@@ -37,18 +37,17 @@ Mission critical computational science and engineering applications from the pub
 ### Minimum
 
 - [CMake] v3.17 or newer
-- C++11 compiler
+- C++17 compiler
 - C11 compiler
 
 ### Optional
 
  - Fortan 90 compiler
- - MPI 2.0+
- - CUDA vXXX
- - HIP vXXX
- - oneAPI Toolkit vXXX
- - OpenCL ...
- - OpenMP ...
+ - CUDA 9 or later
+ - HIP 3.5 or later
+ - SYCL 2020 or later
+ - OpenCL 2.0 or later
+ - OpenMP 4.0 or later
 
 
 A detailed list of tested platforms can be found in the [installation guide](INSTALL.md).
@@ -56,38 +55,44 @@ A detailed list of tested platforms can be found in the [installation guide](INS
 
 ## Build, Test, Install
 
-OCCA uses the [CMake] build system. Checkout the [installation guide](INSTALL.md) for a comprehensive overview of all build settings.
+OCCA uses the [CMake] build system. Checkout the [installation guide](INSTALL.md) for a comprehensive overview of all build settings and instructions for building on [Windows](INSTALL.md#windows) or [Mac OS](INSTALL.md#mac-os). 
 
 ### Linux 
 
-For convenience, the shell script `configure.sh` has been provided drive the Cmake build. Compilers, flags, and other build parameters can be adjusted there. By default OCCA will be built and installed in `./build` and `./install`.
+For convenience, the shell script `configure-cmake.sh` has been provided to drive the CMake build. Compilers, flags, and other build parameters can be adjusted there. By default, this script uses `./build` and `./install` for the build and install directories.
 
 The following demonstrates a typical sequence of shell commands to build, test, and install occa:
+```shell
+$ ./configure.sh
+$ cmake --build build --parallel <number-of-threads>
+$ ctest --test-dir build --output-on-failure
+$ cmake --install build --prefix install
 ```
-$> ./configure.sh
-$> cmake --build build --parallel <number-of-threads>
-$> ctest --test-dir build --output-on-failure
-$> cmake --install build --prefix install
-```
 
-### MacOS
+If dependencies are installed in a non-standard location, set the corresponding [environment variable](INSTALL.md#dependency-paths) to this path. 
 
-...
-
-### Windows
-
-...
 
 ## Use
 
 ### Building an OCCA application
 
-OCCA provides CMake package files which are included during installation. 
-To use OCCA in a downstream project (...)
+For convenience, OCCA provides CMake package files which are configured during installation. These package files define an imported target, `OCCA::libocca`, and look for all required dependencies.
+
+For example, the CMakeLists.txt of downstream projects using OCCA would include
+```cmake
+find_package(occa REQUIRED)
+
+add_executable(downstream-app ...)
+target_link_libraries(<downstream-app> PRIVATE OCCA::libocca)
+
+add_library(downstream-lib ...)
+target_link_libraries(<downstream-lib> PUBLIC OCCA::libocca)
+```
+In the case of a downstream library, linking OCCA using the  `PUBLIC` specifier ensures that CMake will forward OCCA's dependencies and compiler flags automatically.
 
 ### Environment
 
-...
+During installation, the [Env Modules](Env_Modules) file `<install-prefix>/modulefiles/occa` is generated. When this module is loaded, paths to the installed `bin`, `lib`, and `include` directories are appended to environment variables such as `LD_LIBRARY_PATH`.
 
 ## Community
 
@@ -104,7 +109,15 @@ OCCA is a community driven project that relies on the support of people like you
 
 ### Acknowledgements
 
-> This work was supported by Argonne Leadership Computing Facility, which is a DOE Office of Science User Facility supported under Contract DE-AC02-06CH11357 and by the Exascale Computing Project (17-SC-20-SC), a joint project of the U.S. Department of Energy’s Office of Science and National Nuclear Security Administration, responsible for delivering a capable exascale ecosystem, including software, applications, and hardware technology, to support the nation’s exascale computing imperative.
+This work was supported in part by 
+- Argonne Leadership Computing Facility, which is a DOE Office of Science User Facility supported under Contract DE-AC02-06CH11357
+- The Exascale Computing Project (17-SC-20-SC), a joint project of the U.S. Department of Energy’s Office of Science and National Nuclear Security Administration, responsible for delivering a capable exascale ecosystem, including software, applications, and hardware technology, to support the nation’s exascale computing imperative
+- The Center for Efficient Exascale Discretizations (CEED), a co-design center within the U.S. Department of Energy Exascale Computing Project.
+- Intel
+- AMD
+- Shell
+
+
 
 ## License
 
@@ -116,3 +129,5 @@ OCCA is available under a [MIT license](LICENSE.MD)
 [OCCA_SLACK]: https://join.slack.com/t/libocca/shared_invite/zt-4jcnu451-qPpPWUzhm7YQKY_HMhIsIw
 
 [CMake]: https://cmake.org/
+
+[Env_Modules]: https://modules.readthedocs.io/en/latest/index.html
